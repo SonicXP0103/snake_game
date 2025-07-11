@@ -26,6 +26,9 @@ let snake = [
 // 食物位置初始為 (0, 0)
 let food = { x: 0, y: 0 };
 
+// 用來清除 setInterval
+let intervalID = null; 
+
 // #endregion 存取資料
 
 // #region 自訂義函數
@@ -93,9 +96,11 @@ function Start()
  */
 function Update()
 {
-    setInterval(() => {
+    if (isInitialized === false || gameStatus !== 1) {
+        return; // 如果遊戲未初始化或未開始，則不執行更新
+    }
+
     moveSnake(currentDirection);
-    }, UPDATE_INTERVAL);
 }
 
 /**
@@ -200,6 +205,34 @@ function CheckFoodCollision(newHead)
     return false; // 返回 false 表示沒有吃到食物
 }
 
+// 開始遊戲按鈕
+function startGame()
+{
+    // 已初始化
+    if (isInitialized){
+        return;
+    }
+
+    isInitialized = true;
+
+    // 設定更新循環
+    intervalID = setInterval(() => {
+        Update();
+    }, UPDATE_INTERVAL);
+
+    Start();
+}
+
+// 重新開始遊戲按鈕
+function resetGame()
+{
+    clearInterval(intervalID);
+    isInitialized = false;
+    currentDirection = null;
+
+    startGame()
+}
+
 // #endregion 自訂義函數
 
 // ===== 主要邏輯 =====
@@ -208,12 +241,6 @@ function CheckFoodCollision(newHead)
 // 取得 canvas 與畫布內容
 const canvas = document.getElementById("gameCanvas");
 const ctx    = canvas.getContext("2d");
-
-// 設定為已初始化
-if (isInitialized === false) {
-    Start(); // 啟動遊戲
-    isInitialized = true; 
-}
 
 // 啟動遊戲更新循環
 Update(); 
