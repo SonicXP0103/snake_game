@@ -104,6 +104,13 @@ function moveSnake(direction)
             break;
     }
 
+    // 檢查是否死亡
+    if (CheckGameOver())
+    {
+        endGame(); // 如果死亡，則結束遊戲
+        return; // 結束函數執行
+    }
+
     // 檢查蛇是否吃到食物
     if (CheckFoodCollision(newHead))
     {
@@ -177,6 +184,33 @@ function CheckFoodCollision(newHead)
     return false; // 返回 false 表示沒有吃到食物
 }
 
+/**
+ * @brief: 檢查是否死亡
+ * details: 檢查蛇頭是否碰到牆壁或自身
+ * @return: boolean - 如果死亡返回 true，否則返回 false
+ */
+function CheckGameOver()
+{
+    // 檢查蛇頭是否碰到牆壁
+    const head = snake[0];
+    if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height)
+    {
+        return true; // 碰到牆壁，遊戲結束
+    }
+
+    // 檢查蛇頭是否碰到自身
+    for (let i = 1; i < snake.length; i++)
+    {
+        if (head.x === snake[i].x && head.y === snake[i].y)
+        {
+            return true; // 碰到自身，遊戲結束
+        }
+    }
+
+    // 沒有死亡
+    return false;
+}
+
 // 開始遊戲按鈕
 function startGame()
 {
@@ -205,6 +239,18 @@ function resetGame()
     startGame()
 }
 
+// 結束遊戲
+function endGame()
+{
+    gameStatus = 2;
+    clearInterval(intervalId);
+    isInitialized = false;
+    currentDirection = null;
+
+    // 顯示遊戲結束訊息
+    alert("遊戲結束！請重新開始遊戲。");
+}
+
 // #endregion 自訂義函數
 
 // ===== 主要邏輯 =====
@@ -216,6 +262,10 @@ const ctx    = canvas.getContext("2d");
 // 監聽鍵盤事件
 document.addEventListener("keydown", function(e)
 {
+    if (!isInitialized || gameStatus !== 1) {
+        return; // 如果遊戲未初始化或未開始，則不處理鍵盤
+    }
+
     switch (e.key)
     {
         case "ArrowUp":                
