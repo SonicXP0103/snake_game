@@ -150,21 +150,57 @@ function RenderSnake()
         ctx.strokeRect(snake[i].x, snake[i].y, SNAKE_SIZE, SNAKE_SIZE);
     }
 
-    // ⬇️ 最後再畫食物（紅色）
-    ctx.fillStyle = "#ff0000";
-    ctx.fillRect(food.x, food.y, SNAKE_SIZE, SNAKE_SIZE);
+    // 最後再畫食物
+    RanderFood();
 }   
 
+/**
+ * brief: 生成食物位置
+ * details: 隨機產生一個合法位置，並確保不與蛇
+ <註> 可優化改Grid系統，使用格子對齊
+ */
 function GenerateFood()
 {
-    food.x = Math.floor(Math.random() * (canvas.width / SNAKE_SIZE)) * SNAKE_SIZE;
-    food.y = Math.floor(Math.random() * (canvas.height / SNAKE_SIZE)) * SNAKE_SIZE;
+    let valid = false; // 是否為合法位置（沒有重疊）
+
+    while (!valid)
+    {
+        // 隨機產生一個食物座標，必須對齊格子
+        let x = Math.floor(Math.random() * (canvas.width / SNAKE_SIZE)) * SNAKE_SIZE;
+        let y = Math.floor(Math.random() * (canvas.height / SNAKE_SIZE)) * SNAKE_SIZE;
+
+        // 預設為合法位置
+        valid = true;
+
+        // 檢查是否與蛇的任一節點重疊
+        for (let i = 0; i < snake.length; i++) {
+            if (snake[i].x === x && snake[i].y === y) {
+                valid = false; // 如果有重疊，就設為非法，重新亂數
+                break;
+            }
+        }
+
+        // 如果沒有重疊，就設置這個位置為新的食物位置
+        if (valid) {
+            food.x = x;
+            food.y = y;
+        }
+    }
 }
 
 function RanderFood()
 {
+    // 紅色樣式
+    // ctx.fillStyle = "#ff0000"; // 紅色
+    // ctx.fillRect(food.x, food.y, SNAKE_SIZE, SNAKE_SIZE);
+
+    // 改畫Emoji的蘋果
+    ctx.font = "20px Arial"; // 設定字體大小
     ctx.fillStyle = "#ff0000"; // 紅色
-    ctx.fillRect(food.x, food.y, SNAKE_SIZE, SNAKE_SIZE);
+    ctx.fillText("🍎", food.x + 2, food.y + 18); // 畫蘋果Emoji，調整位置以對齊格子
+    ctx.strokeStyle = "#000000"; // 黑色邊框
+    ctx.lineWidth = 1; // 邊框寬度
+    ctx.strokeText("🍎", food.x + 2, food.y + 18); // 畫蘋果Emoji邊框    
 }
 
 /**
