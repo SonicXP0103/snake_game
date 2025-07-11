@@ -27,7 +27,7 @@ let snake = [
 let food = { x: 0, y: 0 };
 
 // 用來清除 setInterval
-let intervalID = null; 
+let intervalId = null; 
 
 // #endregion 存取資料
 
@@ -54,34 +54,6 @@ function Start()
 
     // 設定初始方向
     currentDirection = "right";
-      
-    // 監聽鍵盤事件
-    document.addEventListener("keydown", function(e)
-    {
-        switch (e.key)
-        {
-            case "ArrowUp":                
-                if(currentDirection !== "down")                    
-                    currentDirection = "up";
-                    console.log("向上");
-            break;
-            case "ArrowDown":
-                if(currentDirection !== "up")
-                    currentDirection = "down";
-                    console.log("向下");
-            break;
-            case "ArrowLeft":
-                if(currentDirection !== "right")
-                    currentDirection = "left";
-                    console.log("向左");
-                break;
-            case "ArrowRight":
-                if(currentDirection !== "left")
-                    currentDirection = "right";
-                    console.log("向右");
-            break;
-        }
-    });
 
     // 初始渲染蛇的身體(靜止初始位置，可以省略)
     //RenderSnake();
@@ -216,7 +188,7 @@ function startGame()
     isInitialized = true;
 
     // 設定更新循環
-    intervalID = setInterval(() => {
+    intervalId = setInterval(() => {
         Update();
     }, UPDATE_INTERVAL);
 
@@ -226,7 +198,7 @@ function startGame()
 // 重新開始遊戲按鈕
 function resetGame()
 {
-    clearInterval(intervalID);
+    clearInterval(intervalId);
     isInitialized = false;
     currentDirection = null;
 
@@ -237,10 +209,34 @@ function resetGame()
 
 // ===== 主要邏輯 =====
 
-
 // 取得 canvas 與畫布內容
 const canvas = document.getElementById("gameCanvas");
 const ctx    = canvas.getContext("2d");
 
-// 啟動遊戲更新循環
-Update(); 
+// 監聽鍵盤事件
+document.addEventListener("keydown", function(e)
+{
+    switch (e.key)
+    {
+        case "ArrowUp":                
+            if(currentDirection !== "down")                    
+                currentDirection = "up";
+                console.log("向上");
+        break;
+        case "ArrowDown":
+            if(currentDirection !== "up")
+                currentDirection = "down";
+                console.log("向下");
+        break;
+        case "ArrowLeft":
+            if(currentDirection !== "right")
+                currentDirection = "left";
+                console.log("向左");
+            break;
+        case "ArrowRight":
+            if(currentDirection !== "left")
+                currentDirection = "right";
+                console.log("向右");
+        break;
+    }
+});
