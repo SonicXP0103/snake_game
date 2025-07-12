@@ -34,8 +34,8 @@ let intervalId = null;
 // #region 自訂義函數
 
 /**
- * brief: 遊戲開始函數
- * details: 初始化遊戲狀態，若遊戲已經開始則不執行
+ * @brief: 遊戲開始函數
+ * @details: 初始化遊戲狀態，若遊戲已經開始則不執行
  */
 function Start()
 {
@@ -63,8 +63,8 @@ function Start()
 }
 
 /**
- * brief: 更新遊戲狀態函數
- * details: 每隔一段時間移動蛇的身體
+ * @brief: 更新遊戲狀態函數
+ * @details: 每隔一段時間移動蛇的身體
  */
 function Update()
 {
@@ -76,9 +76,9 @@ function Update()
 }
 
 /**
- * brief: 移動蛇的函數
- * param {string} direction - 移動方向，可以是 "up", "down", "left", "right"
- * return: 無
+ * @brief: 移動蛇的函數
+ * @param {string} direction - 移動方向，可以是 "up", "down", "left", "right"
+ * @return: 無
  */
 function moveSnake(direction)
 {
@@ -129,7 +129,7 @@ function moveSnake(direction)
     RenderSnake();
 }
 
-// 渲染蛇的身體
+// @brief 渲染蛇的身體
 function RenderSnake()
 {
     // 清除畫布
@@ -155,8 +155,8 @@ function RenderSnake()
 }   
 
 /**
- * brief: 生成食物位置
- * details: 隨機產生一個合法位置，並確保不與蛇
+ * @brief: 生成食物位置
+ * @details: 隨機產生一個合法位置，並確保不與蛇
  <註> 可優化改Grid系統，使用格子對齊
  */
 function GenerateFood()
@@ -188,6 +188,10 @@ function GenerateFood()
     }
 }
 
+/**
+ * @brief: 渲染食物
+ * @details: 在畫布上渲染食物，使用紅色方塊或Emoji
+ */
 function RanderFood()
 {
     // 紅色樣式
@@ -204,10 +208,10 @@ function RanderFood()
 }
 
 /**
- * brief: 檢查蛇是否吃到食物
- * details: 如果蛇頭位置與食物位置相同，則增加蛇的長度並生成新的食物
- * param {Object} newHead - 新的蛇頭位置，包含 x 和 y 屬性
- * return: boolean - 如果吃到食物返回 true，否則返回 false
+ * @brief: 檢查蛇是否吃到食物
+ * @details: 如果蛇頭位置與食物位置相同，則增加蛇的長度並生成新的食物
+ * @param {Object} newHead - 新的蛇頭位置，包含 x 和 y 屬性
+ * @return: boolean - 如果吃到食物返回 true，否則返回 false
  */
 function CheckFoodCollision(newHead)
 {
@@ -222,7 +226,7 @@ function CheckFoodCollision(newHead)
 
 /**
  * @brief: 檢查是否死亡
- * details: 檢查蛇頭是否碰到牆壁或自身
+ * @details: 檢查蛇頭是否碰到牆壁或自身
  * @return: boolean - 如果死亡返回 true，否則返回 false
  */
 function CheckGameOver()
