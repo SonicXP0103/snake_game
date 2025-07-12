@@ -27,7 +27,13 @@ let snake = [
 let food = { x: 0, y: 0 };
 
 // 用來清除 setInterval
-let intervalId = null; 
+let intervalId = null;
+
+// 分數
+let score = 0;
+
+// 難度等級
+let level = 1;
 
 // #endregion 存取資料
 
@@ -42,8 +48,8 @@ function Start()
     // 初始化遊戲狀態
     gameStatus = 1; // 設定為進行中
 
-    // 清除畫布
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 重置分數
+    score = 0;
 
     // 重置蛇的身體
     snake = [
@@ -55,11 +61,11 @@ function Start()
     // 設定初始方向
     currentDirection = "right";
 
-    // 初始渲染蛇的身體(靜止初始位置，可以省略)
-    //RenderSnake();
-
     // 生成食物
     GenerateFood();
+
+    // 更新分數 UI
+    UpdateScoreUI();
 }
 
 /**
@@ -73,6 +79,98 @@ function Update()
     }
 
     moveSnake(currentDirection);
+
+    RenderPanel();
+}
+
+// 渲染整個畫布
+function RenderPanel()
+{
+    // 清除畫布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 渲染蛇的身體
+    RenderSnake();
+
+    // 渲染食物
+    RenderFood();
+
+    // 渲染分數
+    //RenderScore();
+
+    // 遊戲結束時渲染結束畫面
+    if (gameStatus === 2) {
+        RenderGameOver()
+    }
+}
+
+// @brief 渲染蛇的身體
+function RenderSnake()
+{
+    // 畫一個方塊（當作蛇的身體）
+    ctx.fillStyle = "#66ff66"; // 綠色
+    //ctx.fillRect(100, 100, 20, 20); // (x, y, 寬, 高)
+    
+    // 畫身體節點的外框
+    ctx.strokeStyle = "#000000"; // 黑色
+    ctx.lineWidth = 2; // 線寬
+    
+    // 繪製蛇的身體
+    for (let i = 0; i < snake.length; i++)
+    {
+        ctx.fillRect(snake[i].x, snake[i].y, SNAKE_SIZE, SNAKE_SIZE);
+        ctx.strokeRect(snake[i].x, snake[i].y, SNAKE_SIZE, SNAKE_SIZE);
+    }
+}   
+
+/**
+ * @brief: 渲染食物
+ * @details: 在畫布上渲染食物，使用紅色方塊或Emoji
+*/
+function RenderFood()
+{
+    // 紅色樣式
+    // ctx.fillStyle = "#ff0000"; // 紅色
+    // ctx.fillRect(food.x, food.y, SNAKE_SIZE, SNAKE_SIZE);
+    
+    // 改畫Emoji的蘋果
+    ctx.font = "20px Arial"; // 設定字體大小
+    ctx.fillStyle = "#ff0000"; // 紅色
+    ctx.fillText("🍎", food.x + 2, food.y + 18); // 畫蘋果Emoji，調整位置以對齊格子
+    ctx.strokeStyle = "#000000"; // 黑色邊框
+    ctx.lineWidth = 1; // 邊框寬度
+    ctx.strokeText("🍎", food.x + 2, food.y + 18); // 畫蘋果Emoji邊框    
+}
+
+/***
+ * @brief: 渲染分數(主框架中，已棄用)
+ * @details: 在遊戲層畫布上渲染分數，使用藍色字體
+ */
+function RenderScore()
+{
+    ctx.fillStyle = "#283adbff";
+    ctx.font = "20px Arial";
+    ctx.fillText("分數：" + score, 10, 30);
+}
+
+function RenderGameOver()
+{
+    message = "遊戲結束";
+
+    // 顯示遊戲結束訊息
+    //alert(message);
+    
+    // 顯示結束畫面
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // 半透明背景
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "36px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(message, canvas.width / 2, canvas.height / 2 - 20);
+    ctx.font = "24px Arial";
+    ctx.fillText("分數：" + score, canvas.width / 2, canvas.height / 2 + 20);
+    ctx.fillText("點擊重新開始", canvas.width / 2, canvas.height / 2 + 60);    
 }
 
 /**
@@ -124,35 +222,7 @@ function moveSnake(direction)
         snake.pop(); // 移除尾部節點
         snake.unshift(newHead); // 在頭部添加新的節點
     }
-  
-    // 渲染蛇的身體
-    RenderSnake();
 }
-
-// @brief 渲染蛇的身體
-function RenderSnake()
-{
-    // 清除畫布
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 畫一個方塊（當作蛇的身體）
-    ctx.fillStyle = "#66ff66"; // 綠色
-    //ctx.fillRect(100, 100, 20, 20); // (x, y, 寬, 高)
-    
-    // 畫身體節點的外框
-    ctx.strokeStyle = "#000000"; // 黑色
-    ctx.lineWidth = 2; // 線寬
-    
-    // 繪製蛇的身體
-    for (let i = 0; i < snake.length; i++)
-    {
-        ctx.fillRect(snake[i].x, snake[i].y, SNAKE_SIZE, SNAKE_SIZE);
-        ctx.strokeRect(snake[i].x, snake[i].y, SNAKE_SIZE, SNAKE_SIZE);
-    }
-
-    // 最後再畫食物
-    RanderFood();
-}   
 
 /**
  * @brief: 生成食物位置
@@ -187,26 +257,6 @@ function GenerateFood()
         }
     }
 }
-
-/**
- * @brief: 渲染食物
- * @details: 在畫布上渲染食物，使用紅色方塊或Emoji
- */
-function RanderFood()
-{
-    // 紅色樣式
-    // ctx.fillStyle = "#ff0000"; // 紅色
-    // ctx.fillRect(food.x, food.y, SNAKE_SIZE, SNAKE_SIZE);
-
-    // 改畫Emoji的蘋果
-    ctx.font = "20px Arial"; // 設定字體大小
-    ctx.fillStyle = "#ff0000"; // 紅色
-    ctx.fillText("🍎", food.x + 2, food.y + 18); // 畫蘋果Emoji，調整位置以對齊格子
-    ctx.strokeStyle = "#000000"; // 黑色邊框
-    ctx.lineWidth = 1; // 邊框寬度
-    ctx.strokeText("🍎", food.x + 2, food.y + 18); // 畫蘋果Emoji邊框    
-}
-
 /**
  * @brief: 檢查蛇是否吃到食物
  * @details: 如果蛇頭位置與食物位置相同，則增加蛇的長度並生成新的食物
@@ -217,7 +267,12 @@ function CheckFoodCollision(newHead)
 {
     if (newHead.x === food.x && newHead.y === food.y)
     {
+        score += level; // 增加分數
         GenerateFood(); // 生成新的食物
+
+        // 更新分數 UI
+        UpdateScoreUI();
+
         return true; // 返回 true 表示吃到食物
     }
 
@@ -286,12 +341,24 @@ function endGame()
     clearInterval(intervalId);
     isInitialized = false;
     currentDirection = null;
-
-    // 顯示遊戲結束訊息
-    alert("遊戲結束！請重新開始遊戲。");
 }
 
 // #endregion 自訂義函數
+
+// #region UI
+
+/**
+ * @brief: 更新分數 UI 顯示
+ */
+function UpdateScoreUI()
+{
+    const scoreBoard = document.getElementById("scoreBoard");
+    if (scoreBoard) {
+        scoreBoard.innerText = "分數：" + score;
+    }
+}
+
+// #endregion UI
 
 // ===== 主要邏輯 =====
 
