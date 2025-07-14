@@ -348,18 +348,28 @@ function endGame()
  */
 function resizeCanvas()
 {
-  const canvas = document.getElementById("gameCanvas");
+  //const canvas = document.getElementById("gameCanvas");
 
-  // 取得螢幕的最短邊（保證正方形）
-  const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+  // 判斷是否為手機畫面（寬度小於等於 480px）
+  const isMobile = window.innerWidth <= 480;
 
-  // 設定畫面上的顯示大小（CSS）
-  canvas.style.width = size + "px";
-  canvas.style.height = size + "px";
+  if (isMobile) {
+    // 手機：動態縮放，等比例放大
+    const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
 
-  // 同步設定邏輯解析度（避免模糊）
-  canvas.width = size;
-  canvas.height = size;
+    canvas.style.width = size + "px";
+    canvas.style.height = size + "px";
+
+    canvas.width = size;
+    canvas.height = size;
+  } else {
+    // 電腦版：維持預設解析度與大小（不動）
+    canvas.style.width = "400px";
+    canvas.style.height = "400px";
+
+    canvas.width = 400;
+    canvas.height = 400;
+  }
 }
 
 // #endregion 自訂義函數
