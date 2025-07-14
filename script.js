@@ -343,6 +343,25 @@ function endGame()
     currentDirection = null;
 }
 
+/**
+ * @brief: 畫布大小調整
+ */
+function resizeCanvas()
+{
+  const canvas = document.getElementById("gameCanvas");
+
+  // 取得螢幕的最短邊（保證正方形）
+  const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+
+  // 設定畫面上的顯示大小（CSS）
+  canvas.style.width = size + "px";
+  canvas.style.height = size + "px";
+
+  // 同步設定邏輯解析度（避免模糊）
+  canvas.width = size;
+  canvas.height = size;
+}
+
 // #endregion 自訂義函數
 
 // #region UI
@@ -365,6 +384,12 @@ function UpdateScoreUI()
 // 取得 canvas 與畫布內容
 const canvas = document.getElementById("gameCanvas");
 const ctx    = canvas.getContext("2d");
+
+// 初始化畫布大小
+resizeCanvas();
+
+// 螢幕尺寸變化時也要調整
+window.addEventListener("resize", resizeCanvas);
 
 // 監聽鍵盤事件
 document.addEventListener("keydown", function(e)
