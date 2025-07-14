@@ -35,6 +35,10 @@ let score = 0;
 // 難度等級
 let level = 1;
 
+// 手機滑動方向控制
+let touchStartX = 0;
+let touchStartY = 0;
+
 // #endregion 存取資料
 
 // #region 自訂義函數
@@ -436,3 +440,34 @@ document.addEventListener("keydown", function(e)
         break;
     }
 });
+
+// 監聽觸控事件
+canvas.addEventListener("touchstart", function(e) {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+}, false);
+
+// 監聽觸控結束事件
+canvas.addEventListener("touchend", function(e) {
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+
+    // 判斷滑動方向（避免誤觸小滑動）
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // 左右滑動
+        if (dx > 30 && currentDirection !== "left") {
+            currentDirection = "right";
+        } else if (dx < -30 && currentDirection !== "right") {
+            currentDirection = "left";
+        }
+    } else {
+        // 上下滑動
+        if (dy > 30 && currentDirection !== "up") {
+            currentDirection = "down";
+        } else if (dy < -30 && currentDirection !== "down") {
+            currentDirection = "up";
+        }
+    }
+}, false);
