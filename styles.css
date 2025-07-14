@@ -15,24 +15,27 @@ h1 {
 
 #scoreBoard {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  font-size: 20px;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 6px;
+  font-size: 16px;
   font-weight: bold;
   color: #ffffff;
   background-color: rgba(0, 0, 0, 0.7);
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: 6px;
   z-index: 10;
+  pointer-events: none;
 }
 
 #gameContainer {
-  display: flex;
-  justify-content: center;
+  position: relative;
+  display: inline-block;
   margin: 20px auto;
 }
 
 canvas#gameCanvas {
+  display: block;
   background-color: #000;
   border: 4px solid #66ff66;
 }
