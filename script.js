@@ -343,33 +343,36 @@ function endGame()
     currentDirection = null;
 }
 
-/**
- * @brief: 畫布大小調整
- */
-function resizeCanvas()
+function resizeCanvasIfMobile()
 {
-  //const canvas = document.getElementById("gameCanvas");
+    const canvas = document.getElementById("gameCanvas");
 
-  // 判斷是否為手機畫面（寬度小於等於 480px）
-  const isMobile = window.innerWidth <= 480;
+    // 檢查是否為手機版
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  if (isMobile) {
-    // 手機：動態縮放，等比例放大
-    const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+    if (isMobile)
+    {   
+        console.log("手機版");
 
-    canvas.style.width = size + "px";
-    canvas.style.height = size + "px";
+        const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
 
-    canvas.width = size;
-    canvas.height = size;
-  } else {
-    // 電腦版：維持預設解析度與大小（不動）
-    canvas.style.width = "400px";
-    canvas.style.height = "400px";
+        canvas.style.width = size + "px";
+        canvas.style.height = size + "px";
 
-    canvas.width = 400;
-    canvas.height = 400;
-  }
+        canvas.width = size;
+        canvas.height = size;
+    }
+    else
+    {
+        console.log("電腦版");
+
+        // 💻 電腦版保持固定尺寸
+        canvas.style.width = "400px";
+        canvas.style.height = "400px";
+
+        canvas.width = 400;
+        canvas.height = 400;
+    }
 }
 
 // #endregion 自訂義函數
@@ -396,10 +399,11 @@ const canvas = document.getElementById("gameCanvas");
 const ctx    = canvas.getContext("2d");
 
 // 初始化畫布大小
-resizeCanvas();
+resizeCanvasIfMobile();
 
 // 螢幕尺寸變化時也要調整
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize", resizeCanvasIfMobile);
+
 
 // 監聽鍵盤事件
 document.addEventListener("keydown", function(e)
