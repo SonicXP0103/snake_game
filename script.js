@@ -360,6 +360,11 @@ function endGame()
     // 播放遊戲結束音效
     SOUND.gameover.currentTime = 0;
     SOUND.gameover.play();
+
+    // 震動 500 毫秒（手機）
+    if (navigator.vibrate) {
+        navigator.vibrate(500);
+    }
 }
 
 function resizeCanvasIfMobile()
