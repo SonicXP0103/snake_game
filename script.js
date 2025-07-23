@@ -5,6 +5,13 @@ const UPDATE_INTERVAL = 150; // 更新間隔時間（毫秒）
 
 // #endregion 常數定義
 
+// #region 音效定義
+const SOUND = {
+    eat: new Audio("sounds/eat.mp3"), // 吃到食物音效
+    gameover: new Audio("sounds/gameover.mp3"), // 遊戲結束音效
+}
+// #endregion 音效定義
+
 // #region 存取資料
 
 // 是否已初始化遊戲
@@ -277,6 +284,10 @@ function CheckFoodCollision(newHead)
         // 更新分數 UI
         UpdateScoreUI();
 
+        // 播放吃到食物音效
+        SOUND.eat.currentTime = 0; // 重置音效播放時間
+        SOUND.eat.play(); // 播放音效
+
         return true; // 返回 true 表示吃到食物
     }
 
@@ -345,6 +356,10 @@ function endGame()
     clearInterval(intervalId);
     isInitialized = false;
     currentDirection = null;
+
+    // 播放遊戲結束音效
+    SOUND.gameover.currentTime = 0;
+    SOUND.gameover.play();
 }
 
 function resizeCanvasIfMobile()
