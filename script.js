@@ -367,6 +367,7 @@ function endGame()
     }
 }
 
+/* 改 Vue.js 版
 function resizeCanvasIfMobile()
 {
     const canvas = document.getElementById("gameCanvas");
@@ -398,6 +399,7 @@ function resizeCanvasIfMobile()
         canvas.height = 400;
     }
 }
+*/
 
 // #endregion 自訂義函數
 
@@ -418,6 +420,8 @@ function UpdateScoreUI()
 
 // ===== 主要邏輯 =====
 
+/* 改 Vue 的 mounted
+
 // 取得 canvas 與畫布內容
 const canvas = document.getElementById("gameCanvas");
 const ctx    = canvas.getContext("2d");
@@ -427,7 +431,7 @@ resizeCanvasIfMobile();
 
 // 螢幕尺寸變化時也要調整
 window.addEventListener("resize", resizeCanvasIfMobile);
-
+*/
 
 // 監聽鍵盤事件
 document.addEventListener("keydown", function(e)

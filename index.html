@@ -49,15 +49,51 @@
           this.score = 0;
           this.isInitialized = false;
           this.startGame(); // 直接重啟
-        }
+        },
+
+        // 手機版調整畫布大小
+        resizeCanvasIfMobile()
+        {
+            const canvas = document.getElementById("gameCanvas");
+
+            // 檢查是否為手機版
+            const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+            if (isMobile)
+            {   
+                console.log("手機版");
+
+                const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+
+                canvas.style.width = size + "px";
+                canvas.style.height = size + "px";
+
+                canvas.width = size;
+                canvas.height = size;
+            }
+            else
+            {
+                console.log("電腦版");
+
+                // 💻 電腦版保持固定尺寸
+                canvas.style.width = "400px";
+                canvas.style.height = "400px";
+
+                canvas.width = 400;
+                canvas.height = 400;
+            }
+        }        
       },
       mounted() {
+          // 取得 canvas 與畫布內容
           const canvas = document.getElementById("gameCanvas");
-          const ctx = canvas.getContext("2d");
+          const ctx    = canvas.getContext("2d");
 
-          // 測試畫面
-          ctx.fillStyle = "#66ff66";
-          ctx.fillRect(100, 100, 20, 20);
+          // 初始化畫布大小
+          this.resizeCanvasIfMobile();
+
+          // 螢幕尺寸變化時也要調整
+          window.addEventListener("resize", this.resizeCanvasIfMobile);
       }
     }).mount('#app');
   </script>
