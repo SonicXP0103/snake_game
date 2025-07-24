@@ -15,8 +15,8 @@
     </div>
 
     <div id="controlPanel">
-      <button @click="startGame">開始遊戲</button>
-      <button @click="resetGame">重新開始</button>
+      <button @click="StartGame">開始遊戲</button>
+      <button @click="ResetGame">重新開始</button>
     </div>
   </div>
 
@@ -27,13 +27,65 @@
   <script>
     const { createApp } = Vue;
 
+  // #region 常數定義
+
+  const SNAKE_SIZE      = 20; // 蛇身節點大小
+  const UPDATE_INTERVAL = 150; // 更新間隔時間（毫秒）
+
+  // #endregion 常數定義
+
+  // #region 音效定義
+  const SOUND = {
+      eat: new Audio("sounds/eat.mp3"), // 吃到食物音效
+      gameover: new Audio("sounds/gameover.mp3"), // 遊戲結束音效
+  }
+
+  // #endregion 音效定義    
+
     createApp({
       data() {
         return {          
-          score: 0,
-          isInitialized: false,
-          gameStatus: 0,
+          //score: 0,
+          //isInitialized: false,
+          //gameStatus: 0,
           // 其他還沒轉進來的資料會陸續加入
+
+          // 是否已初始化遊戲
+          isInitialized: false, 
+
+          // 當前方向
+          currentDirection: null,
+
+          // 遊戲狀態 (0: 未開始, 1: 進行中, 2: 結束)
+          gameStatus: 0, 
+
+          // 蛇的身體初始位置
+          snake: [
+            { x: 100, y: 100 },
+            { x: 80, y: 100 },
+            { x: 60, y: 100 }
+          ],
+
+          // 食物位置初始為 (0, 0)
+          food: { x: 0, y: 0 },
+
+          // 用來清除 setInterval
+          intervalId: null,
+
+          // 分數
+          score: 0,
+
+          // 難度等級
+          level: 1,
+
+          // 手機滑動方向控制
+          touchStartX: 0,
+          touchStartY: 0,
+
+          // 畫布相關
+          ctx: null,
+          canvas: null,
+
         };
       },
       methods: {
@@ -48,7 +100,6 @@
           console.log("Vue: 重新開始");
           this.score = 0;
           this.isInitialized = false;
-          this.startGame(); // 直接重啟
         },
 
         // 手機版調整畫布大小
@@ -82,18 +133,413 @@
                 canvas.width = 400;
                 canvas.height = 400;
             }
-        }        
+        },
+        
+        // 初始化遊戲
+        InitializeGame()
+        {
+            // 初始化遊戲狀態
+            this.gameStatus = 1; // 設定為進行中
+
+            // 重置分數
+            this.score = 0;
+
+            // 重置蛇的身體
+            this.snake = [
+                { x: 100, y: 100 },
+                { x: 80, y: 100 },
+                { x: 60, y: 100 }
+            ];
+
+            // 設定初始方向
+            this.currentDirection = "right";
+
+            // 生成食物
+            this.GenerateFood();
+
+            // 更新分數 UI
+            this.UpdateScoreUI();
+        },
+
+        // 開始遊戲按鈕
+        StartGame()
+        {
+            // 已初始化
+            if (this.isInitialized){
+                return;
+            }
+
+            this.isInitialized = true;
+
+            // 設定更新循環
+            this.intervalId = setInterval(() => {
+                this.Update();
+            }, UPDATE_INTERVAL);
+
+           this.InitializeGame();
+        },
+
+        // 重新開始遊戲
+        ResetGame()
+        {
+            clearInterval(this.intervalId);
+            this.isInitialized = false;
+            this.currentDirection = null;
+
+            this.StartGame()
+        },
+
+        // 結束遊戲
+        EndGame()
+        {
+            this.gameStatus = 2;
+            clearInterval(this.intervalId);
+            this.isInitialized = false;
+            this.currentDirection = null;
+
+            // 播放遊戲結束音效
+            SOUND.gameover.currentTime = 0;
+            SOUND.gameover.play();
+
+            // 震動 500 毫秒（手機）
+            if (navigator.vibrate) {
+                navigator.vibrate(500);
+            }
+        },
+
+        /**
+         * @brief: 更新遊戲狀態函數
+         * @details: 每隔一段時間移動蛇的身體
+         */
+        Update()
+        {
+            if (this.isInitialized === false || this.gameStatus !== 1) {
+                return; // 如果遊戲未初始化或未開始，則不執行更新
+            }
+
+            this.moveSnake(this.currentDirection);
+
+            this.RenderPanel();
+        },
+
+        // 渲染整個畫布
+        RenderPanel()
+        {
+            // 清除畫布
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            // 渲染蛇的身體
+            this.RenderSnake();
+
+            // 渲染食物
+            this.RenderFood();
+
+            // 渲染分數
+            //this.RenderScore();
+
+            // 遊戲結束時渲染結束畫面
+            if (this.gameStatus === 2) {
+                this.RenderGameOver()
+            }
+        },
+
+        // @brief 渲染蛇的身體
+        RenderSnake()
+        {
+            // 畫一個方塊（當作蛇的身體）
+            this.ctx.fillStyle = "#66ff66"; // 綠色
+            //this.ctx.fillRect(100, 100, 20, 20); // (x, y, 寬, 高)
+            
+            // 畫身體節點的外框
+            this.ctx.strokeStyle = "#000000"; // 黑色
+            this.ctx.lineWidth = 2; // 線寬
+            
+            // 繪製蛇的身體
+            for (let i = 0; i < this.snake.length; i++)
+            {
+                this.ctx.fillRect(this.snake[i].x, this.snake[i].y, SNAKE_SIZE, SNAKE_SIZE);
+                this.ctx.strokeRect(this.snake[i].x, this.snake[i].y, SNAKE_SIZE, SNAKE_SIZE);
+            }
+        },
+
+        /**
+         * @brief: 渲染食物
+         * @details: 在畫布上渲染食物，使用紅色方塊或Emoji
+         */
+        RenderFood()
+        {
+            // 紅色樣式
+            // this.ctx.fillStyle = "#ff0000"; // 紅色
+            // this.ctx.fillRect(this.food.x, this.food.y, SNAKE_SIZE, SNAKE_SIZE);
+            
+            // 改畫Emoji的蘋果
+            this.ctx.font = "20px Arial"; // 設定字體大小
+            this.ctx.fillStyle = "#ff0000"; // 紅色
+            this.ctx.fillText("🍎", this.food.x + 2, this.food.y + 18); // 畫蘋果Emoji，調整位置以對齊格子
+            this.ctx.strokeStyle = "#000000"; // 黑色邊框
+            this.ctx.lineWidth = 1; // 邊框寬度
+            this.ctx.strokeText("🍎", this.food.x + 2, this.food.y + 18); // 畫蘋果Emoji邊框
+        },
+
+        /**
+         * @brief: 渲染分數(主框架中，已棄用)
+         * @details: 在遊戲層畫布上渲染分數，使用藍色字體
+         */
+        RenderScore()
+        {
+            this.ctx.fillStyle = "#283adbff";
+            this.ctx.font = "20px Arial";
+            this.ctx.fillText("分數：" + this.score, 10, 30);
+        },
+
+        RenderGameOver()
+        {
+            message = "遊戲結束";
+
+            // 顯示遊戲結束訊息
+            //alert(message);
+            
+            // 顯示結束畫面
+            this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); // 半透明背景
+
+            this.ctx.fillStyle = "#ffffff";
+            this.ctx.font = "36px Arial";
+            this.ctx.textAlign = "center";
+            this.ctx.fillText(message, this.canvas.width / 2, this.canvas.height / 2 - 20);
+            this.ctx.font = "24px Arial";
+            this.ctx.fillText("分數：" + this.score, this.canvas.width / 2, this.canvas.height / 2 + 20);
+            this.ctx.fillText("點擊重新開始", this.canvas.width / 2, this.canvas.height / 2 + 60);
+        },
+
+        /**
+         * @brief: 移動蛇的函數
+         * @param {string} direction - 移動方向，可以是 "up", "down", "left", "right"
+         * @return: 無
+         */
+        moveSnake(direction)
+        {
+            // 取得蛇頭位置
+            let head = this.snake[0];
+            
+            // 根據方向移動蛇頭
+            let newHead = { x: head.x, y: head.y };
+            
+            switch (direction)
+            {
+                case "up":
+                    newHead.y -= SNAKE_SIZE;
+                    break;
+                case "down":
+                    newHead.y += SNAKE_SIZE;
+                    break;
+                case "left":
+                    newHead.x -= SNAKE_SIZE;
+                    break;
+                case "right":
+                    newHead.x += SNAKE_SIZE;
+                    break;
+            }
+
+            // 檢查是否死亡
+            if (this.CheckGameOver())
+            {
+                this.EndGame(); // 如果死亡，則結束遊戲
+                return; // 結束函數執行
+            }
+
+            // 檢查蛇是否吃到食物
+            if (this.CheckFoodCollision(newHead))
+            {
+                // 如果吃到食物，則不移除尾部節點
+                // 但需要在頭部添加新的節點
+                this.snake.unshift(newHead); // 在頭部添加新的節點
+            }
+            else
+            {
+                // 如果沒有吃到食物，則移除尾部節點
+                this.snake.pop(); // 移除尾部節點
+                this.snake.unshift(newHead); // 在頭部添加新的節點
+            }
+        },
+
+        /**
+         * @brief: 生成食物位置
+         * @details: 隨機產生一個合法位置，並確保不與蛇
+         <註> 可優化改Grid系統，使用格子對齊
+        */
+        GenerateFood()
+        {
+            let valid = false; // 是否為合法位置（沒有重疊）
+
+            while (!valid)
+            {
+                // 隨機產生一個食物座標，必須對齊格子
+                let x = Math.floor(Math.random() * (this.canvas.width / SNAKE_SIZE)) * SNAKE_SIZE;
+                let y = Math.floor(Math.random() * (this.canvas.height / SNAKE_SIZE)) * SNAKE_SIZE;
+
+                // 預設為合法位置
+                valid = true;
+
+                // 檢查是否與蛇的任一節點重疊
+                for (let i = 0; i < this.snake.length; i++) {
+                    if (this.snake[i].x === x && this.snake[i].y === y) {
+                        valid = false; // 如果有重疊，就設為非法，重新亂數
+                        break;
+                    }
+                }
+
+                // 如果沒有重疊，就設置這個位置為新的食物位置
+                if (valid) {
+                    this.food.x = x;
+                    this.food.y = y;
+                }
+            }
+        },
+
+        /**
+         * @brief: 檢查蛇是否吃到食物
+         * @details: 如果蛇頭位置與食物位置相同，則增加蛇的長度並生成新的食物
+         * @param {Object} newHead - 新的蛇頭位置，包含 x 和 y 屬性
+         * @return: boolean - 如果吃到食物返回 true，否則返回 false
+         */
+        CheckFoodCollision(newHead)
+        {
+            if (newHead.x === this.food.x && newHead.y === this.food.y)
+            {
+                this.score += this.level; // 增加分數
+                this.GenerateFood(); // 生成新的食物
+
+                // 更新分數 UI
+                this.UpdateScoreUI();
+
+                // 播放吃到食物音效
+                SOUND.eat.currentTime = 0; // 重置音效播放時間
+                SOUND.eat.play(); // 播放音效
+
+                return true; // 返回 true 表示吃到食物
+            }
+
+            return false; // 返回 false 表示沒有吃到食物
+        },
+
+        /**
+         * @brief: 檢查是否死亡
+         * @details: 檢查蛇頭是否碰到牆壁或自身
+         * @return: boolean - 如果死亡返回 true，否則返回 false
+         */
+        CheckGameOver()
+        {
+            // 檢查蛇頭是否碰到牆壁
+            const head = this.snake[0];
+            if (head.x < 0 || head.x >= this.canvas.width || head.y < 0 || head.y >= this.canvas.height)
+            {
+                return true; // 碰到牆壁，遊戲結束
+            }
+
+            // 檢查蛇頭是否碰到自身
+            for (let i = 1; i < this.snake.length; i++)
+            {
+                if (head.x === this.snake[i].x && head.y === this.snake[i].y)
+                {
+                    return true; // 碰到自身，遊戲結束
+                }
+            }
+
+            // 沒有死亡
+            return false;
+        },
+
+        // #region UI
+
+        /**
+         * @brief: 更新分數 UI 顯示
+         */
+        UpdateScoreUI()
+        {
+            const scoreBoard = document.getElementById("scoreBoard");
+            if (scoreBoard) {
+                scoreBoard.innerText = "分數：" + this.score;
+            }
+        },
+
+        // #endregion UI        
+
       },
       mounted() {
           // 取得 canvas 與畫布內容
           const canvas = document.getElementById("gameCanvas");
-          const ctx    = canvas.getContext("2d");
+          this.canvas = canvas;
+          this.ctx = canvas.getContext("2d");
 
           // 初始化畫布大小
           this.resizeCanvasIfMobile();
 
           // 螢幕尺寸變化時也要調整
           window.addEventListener("resize", this.resizeCanvasIfMobile);
+
+          // 監聽鍵盤事件
+          document.addEventListener("keydown", (e) =>
+          {
+              if (!this.isInitialized || this.gameStatus !== 1) {
+                  return; // 如果遊戲未初始化或未開始，則不處理鍵盤
+              }
+
+              switch (e.key)
+              {
+                  case "ArrowUp":                
+                      if(this.currentDirection !== "down")                    
+                          this.currentDirection = "up";
+                          console.log("向上");
+                  break;
+                  case "ArrowDown":
+                      if(this.currentDirection !== "up")
+                          this.currentDirection = "down";
+                          console.log("向下");
+                  break;
+                  case "ArrowLeft":
+                      if(this.currentDirection !== "right")
+                          this.currentDirection = "left";
+                          console.log("向左");
+                      break;
+                  case "ArrowRight":
+                      if(this.currentDirection !== "left")
+                          this.currentDirection = "right";
+                          console.log("向右");
+                  break;
+              }
+          });
+
+          // 監聽觸控事件
+          this.canvas.addEventListener("touchstart", (e) => {
+              const touch = e.touches[0];
+              this.touchStartX = touch.clientX;
+              this.touchStartY = touch.clientY;
+          }, false);
+
+          // 監聽觸控結束事件
+          this.canvas.addEventListener("touchend", (e) => {
+              const touch = e.changedTouches[0];
+              const dx = touch.clientX - this.touchStartX;
+              const dy = touch.clientY - this.touchStartY;
+
+              // 判斷滑動方向（避免誤觸小滑動）
+              if (Math.abs(dx) > Math.abs(dy)) {
+                  // 左右滑動
+                  if (dx > 30 && this.currentDirection !== "left") {
+                      this.currentDirection = "right";
+                  } else if (dx < -30 && this.currentDirection !== "right") {
+                      this.currentDirection = "left";
+                  }
+              } else {
+                  // 上下滑動
+                  if (dy > 30 && this.currentDirection !== "up") {
+                      this.currentDirection = "down";
+                  } else if (dy < -30 && this.currentDirection !== "down") {
+                      this.currentDirection = "up";
+                  }
+              }
+          }, false);          
       }
     }).mount('#app');
   </script>
