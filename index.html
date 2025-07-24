@@ -8,17 +8,62 @@
 <body>
   <h1>🐍 貪食蛇</h1>
   
-  <div id="gameContainer">
-    <div id="scoreBoard">分數：0</div>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <div id="app">
+    <div id="gameContainer">
+      <div id="scoreBoard">分數：{{ score }}</div>
+      <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <div id="controlPanel">
+      <button @click="startGame">開始遊戲</button>
+      <button @click="resetGame">重新開始</button>
+    </div>
   </div>
 
-  <div id="controlPanel">
-    <button onclick="startGame()">開始遊戲</button>
-    <button onclick="resetGame()">重新開始</button>
-  </div>
+<!-- ✅ Vue 3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
-  <script src="script.js"></script>
+  <!-- ✅ Vue 初始化 -->
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {          
+          score: 0,
+          isInitialized: false,
+          gameStatus: 0,
+          // 其他還沒轉進來的資料會陸續加入
+        };
+      },
+      methods: {
+        startGame() {
+          console.log("Vue: 開始遊戲");
+          this.score = 0;
+          this.isInitialized = true;
+          this.gameStatus = 1;
+          // 等下會搬 canvas 的初始化與邏輯進來
+        },
+        resetGame() {
+          console.log("Vue: 重新開始");
+          this.score = 0;
+          this.isInitialized = false;
+          this.startGame(); // 直接重啟
+        }
+      },
+      mounted() {
+          const canvas = document.getElementById("gameCanvas");
+          const ctx = canvas.getContext("2d");
+
+          // 測試畫面
+          ctx.fillStyle = "#66ff66";
+          ctx.fillRect(100, 100, 20, 20);
+      }
+    }).mount('#app');
+  </script>
+
+  <!-- ✅ 原本 JS 暫時保留 -->
+  <!--<script src="script.js"></script>-->
   
 </body>
 </html>
